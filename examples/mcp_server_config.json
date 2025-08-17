@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "dataproc": {
+      "command": "python",
+      "args": ["-m", "dataproc_mcp_server"],
+      "env": {
+        "GOOGLE_APPLICATION_CREDENTIALS": "/path/to/service-account.json"
+      }
+    }
+  }
+}
