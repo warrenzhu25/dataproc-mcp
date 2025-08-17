@@ -1,13 +1,9 @@
 """Main entry point for the Dataproc MCP server."""
 
-import asyncio
 import logging
 import os
-import sys
-from pathlib import Path
 
 import structlog
-from mcp.server.stdio import stdio_server
 
 from .server import app
 
@@ -25,7 +21,7 @@ def setup_logging():
             structlog.processors.StackInfoRenderer(),
             structlog.processors.format_exc_info,
             structlog.processors.UnicodeDecoder(),
-            structlog.processors.JSONRenderer()
+            structlog.processors.JSONRenderer(),
         ],
         context_class=dict,
         logger_factory=structlog.stdlib.LoggerFactory(),
@@ -33,23 +29,26 @@ def setup_logging():
     )
 
 
-async def main():
+def main():
     """Run the MCP server."""
     setup_logging()
-    
+
     # Check for transport type
     transport = os.getenv("DATAPROC_MCP_TRANSPORT", "stdio")
-    
-    if transport == "stdio":
-        async with stdio_server() as (read_stream, write_stream):
-            await app.run(
-                read_stream,
-                write_stream,
-                app.create_initialization_options()
-            )
-    else:
-        raise ValueError(f"Unsupported transport: {transport}")
+
+    # FastMCP supports stdio, sse, and streamable-http transports
+    if transport == "http":
+        # Map http to streamable-http for FastMCP
+        transport = "streamable-http"
+
+    if transport not in ["stdio", "sse", "streamable-http"]:
+        raise ValueError(
+            f"Unsupported transport: {transport}. Supported: stdio, sse, streamable-http"
+        )
+
+    # Run the FastMCP server with the specified transport
+    app.run(transport=transport)
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()

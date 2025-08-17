@@ -13,9 +13,16 @@
 - Install dev dependencies: `pip install -e ".[dev]"`
 
 ### Running the server
-- Run server: `python -m dataproc_mcp_server`
+- Run server (stdio): `python -m dataproc_mcp_server`
+- Run server with HTTP transport: `DATAPROC_MCP_TRANSPORT=http python -m dataproc_mcp_server`
 - Run server with SSE transport: `DATAPROC_MCP_TRANSPORT=sse python -m dataproc_mcp_server`
 - Run with MCP CLI: `mcp run src/dataproc_mcp_server/server.py`
+
+### Transport Configuration
+- **STDIO** (default): Standard input/output communication for command-line tools
+- **HTTP**: REST API over HTTP using streamable-http transport
+- **SSE**: Server-Sent Events for real-time communication
+- Set host/port: `DATAPROC_MCP_HOST=0.0.0.0 DATAPROC_MCP_PORT=8080`
 
 ### Testing and linting
 - Run tests: `pytest`

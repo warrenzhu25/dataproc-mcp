@@ -76,15 +76,46 @@ Ensure your service account or user has the following IAM roles:
 
 ### Running the Server
 
+The server supports multiple transport protocols:
+
 ```bash
-# Run with Python module
+# STDIO (default) - for command-line tools and MCP clients
 python -m dataproc_mcp_server
 
-# Run with entry point script
-dataproc-mcp-server
+# HTTP - REST API over HTTP using streamable-http transport
+DATAPROC_MCP_TRANSPORT=http python -m dataproc_mcp_server
 
-# Run with custom transport (if implemented)
+# SSE - Server-Sent Events for real-time communication
 DATAPROC_MCP_TRANSPORT=sse python -m dataproc_mcp_server
+
+# Run with entry point script (STDIO only)
+dataproc-mcp-server
+```
+
+#### Transport Configuration
+
+- **STDIO** (default): Standard input/output communication for command-line tools and MCP clients
+- **HTTP**: REST API over HTTP using streamable-http transport
+  - Server URL: `http://localhost:8000/mcp`
+  - Accessible via web clients and HTTP-based MCP clients
+- **SSE**: Server-Sent Events for real-time bidirectional communication
+  - Server URL: `http://localhost:8000/sse`
+  - Supports streaming responses and live updates
+
+#### Environment Variables
+
+```bash
+# Transport type (stdio, http, sse)
+export DATAPROC_MCP_TRANSPORT=http
+
+# Server host (for HTTP/SSE transports)
+export DATAPROC_MCP_HOST=0.0.0.0
+
+# Server port (for HTTP/SSE transports)
+export DATAPROC_MCP_PORT=8080
+
+# Authentication
+export GOOGLE_APPLICATION_CREDENTIALS="/path/to/service-account.json"
 ```
 
 ### MCP Client Configuration
@@ -104,6 +135,29 @@ Add to your MCP client configuration:
   }
 }
 ```
+
+### Testing with MCP Inspector
+
+You can test the server using the official MCP Inspector:
+
+```bash
+# Test STDIO transport
+npx @modelcontextprotocol/inspector python -m dataproc_mcp_server
+
+# Test HTTP transport
+DATAPROC_MCP_TRANSPORT=http python -m dataproc_mcp_server &
+npx @modelcontextprotocol/inspector --transport http --server-url http://127.0.0.1:8000/mcp
+
+# Test SSE transport  
+DATAPROC_MCP_TRANSPORT=sse python -m dataproc_mcp_server &
+npx @modelcontextprotocol/inspector --transport sse --server-url http://127.0.0.1:8000/sse
+```
+
+The MCP Inspector provides a web interface to:
+- Browse available tools and resources
+- Test tool calls with custom parameters
+- View real-time protocol messages
+- Debug server responses
 
 ### Example Tool Usage
 
