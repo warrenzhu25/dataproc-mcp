@@ -17,6 +17,7 @@
 - Run server with HTTP transport: `DATAPROC_MCP_TRANSPORT=http python -m dataproc_mcp_server`
 - Run server with SSE transport: `DATAPROC_MCP_TRANSPORT=sse python -m dataproc_mcp_server`
 - Run with MCP CLI: `mcp run src/dataproc_mcp_server/server.py`
+- Run with debug logging: `DATAPROC_MCP_DEBUG=true python -m dataproc_mcp_server`
 
 ### Transport Configuration
 - **STDIO** (default): Standard input/output communication for command-line tools

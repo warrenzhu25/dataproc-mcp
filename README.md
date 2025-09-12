@@ -148,6 +148,9 @@ export DATAPROC_MCP_TRANSPORT=http
 # Server host (for HTTP/SSE transports)
 export DATAPROC_MCP_HOST=0.0.0.0
 
+# Enable debug logging (true, 1, yes to enable)
+export DATAPROC_MCP_DEBUG=true
+
 # Server port (for HTTP/SSE transports)
 export DATAPROC_MCP_PORT=8080
 
@@ -166,7 +169,8 @@ Add to your MCP client configuration:
       "command": "python",
       "args": ["-m", "dataproc_mcp_server"],
       "env": {
-        "GOOGLE_APPLICATION_CREDENTIALS": "/path/to/service-account.json"
+        "GOOGLE_APPLICATION_CREDENTIALS": "/path/to/service-account.json",
+        "DATAPROC_MCP_DEBUG": "true"
       }
     }
   }
@@ -181,8 +185,8 @@ You can test the server using the official MCP Inspector:
 # Test STDIO transport
 npx @modelcontextprotocol/inspector python -m dataproc_mcp_server
 
-# Test HTTP transport
-DATAPROC_MCP_TRANSPORT=http python -m dataproc_mcp_server &
+# Test HTTP transport with debug logging
+DATAPROC_MCP_TRANSPORT=http DATAPROC_MCP_DEBUG=true python -m dataproc_mcp_server &
 npx @modelcontextprotocol/inspector --transport http --server-url http://127.0.0.1:8000/mcp
 
 # Test SSE transport  
