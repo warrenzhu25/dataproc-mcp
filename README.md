@@ -26,7 +26,7 @@ A Model Context Protocol (MCP) server that provides tools for managing Google Cl
 
 ### Prerequisites
 
-- Python 3.11 or higher
+- **Python 3.11 or higher** (Python 3.13+ recommended)
 - Google Cloud SDK configured with appropriate permissions
 - Dataproc API enabled in your Google Cloud project
 
@@ -34,18 +34,49 @@ A Model Context Protocol (MCP) server that provides tools for managing Google Cl
 
 ```bash
 # Clone the repository
-git clone <repository-url>
+git clone https://github.com/warrenzhu25/dataproc-mcp.git
 cd dataproc-mcp
 
-# Install with uv (recommended)
-uv pip install --system -e .
+# Create virtual environment (recommended for Homebrew Python)
+python3 -m venv .venv
+source .venv/bin/activate
 
-# Or install with pip
+# Install project dependencies
 pip install -e .
 
-# Install development dependencies
+# Install development dependencies (optional)
+pip install -e ".[dev]"
+```
+
+### Alternative Installation Methods
+
+```bash
+# With uv (if available)
+uv pip install --system -e .
+
+# With uv development dependencies
 uv pip install --system -e ".[dev]"
 ```
+
+### Troubleshooting Installation
+
+If you encounter issues:
+
+1. **Python version errors**: Ensure you have Python 3.11+ installed
+   ```bash
+   python --version  # Should be 3.11 or higher
+   ```
+
+2. **Externally managed environment errors**: Use a virtual environment
+   ```bash
+   python3 -m venv .venv
+   source .venv/bin/activate
+   ```
+
+3. **Missing module errors**: Make sure dependencies are installed
+   ```bash
+   pip install -e .
+   ```
 
 ## Configuration
 
@@ -75,6 +106,12 @@ Ensure your service account or user has the following IAM roles:
 ## Usage
 
 ### Running the Server
+
+First, activate your virtual environment (if using one):
+
+```bash
+source .venv/bin/activate
+```
 
 The server supports multiple transport protocols:
 
