@@ -359,6 +359,35 @@ async def delete_batch_job(project_id: str, region: str, batch_id: str) -> str:
         return f"Error: {str(e)}"
 
 
+@mcp.tool()
+async def compare_batch_jobs(
+    batch_id_1: str, 
+    batch_id_2: str, 
+    project_id: str | None = None, 
+    region: str | None = None
+) -> str:
+    """Compare two Dataproc batch jobs and return detailed differences.
+
+    Args:
+        batch_id_1: First batch job ID to compare
+        batch_id_2: Second batch job ID to compare
+        project_id: Google Cloud project ID (optional, uses gcloud config default)
+        region: Dataproc region (optional, uses gcloud config default)
+    """
+    resolved = resolve_project_and_region(project_id, region)
+    if isinstance(resolved, str):  # Error message
+        return resolved
+    project_id, region = resolved
+    
+    batch_client = DataprocBatchClient()
+    try:
+        result = await batch_client.compare_batches(project_id, region, batch_id_1, batch_id_2)
+        return str(result)
+    except Exception as e:
+        logger.error("Failed to compare batch jobs", error=str(e))
+        return f"Error: {str(e)}"
+
+
 # Resources using FastMCP decorators
 @mcp.resource("dataproc://clusters")
 async def get_clusters_resource() -> str:
