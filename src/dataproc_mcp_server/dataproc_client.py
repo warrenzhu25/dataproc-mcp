@@ -13,6 +13,8 @@ from google.cloud import dataproc_v1
 from google.cloud.dataproc_v1 import types
 from google.oauth2 import service_account
 
+from .gcloud_config import get_default_project
+
 logger = structlog.get_logger(__name__)
 
 
@@ -39,6 +41,10 @@ class DataprocClient:
         else:
             # Use default credentials (ADC)
             self._credentials, self._project_id = default()
+            
+            # If no project from ADC, try gcloud config
+            if not self._project_id:
+                self._project_id = get_default_project()
 
     def _get_cluster_client(self, region: str) -> dataproc_v1.ClusterControllerClient:
         """Get cluster controller client with regional endpoint."""

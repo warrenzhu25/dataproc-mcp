@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "dataproc": {
+      "command": "python",
+      "args": ["-m", "dataproc_mcp_server"],
+      "env": {
+        "PATH": ".venv/bin:$PATH",
+        "VIRTUAL_ENV": ".venv"
+      }
+    }
+  }
+}

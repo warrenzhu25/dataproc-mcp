@@ -7,6 +7,7 @@ from mcp.server.fastmcp import FastMCP
 
 from .batch_client import DataprocBatchClient
 from .dataproc_client import DataprocClient
+from .gcloud_config import get_default_project, get_default_region
 
 logger = structlog.get_logger(__name__)
 
@@ -18,15 +19,41 @@ SERVER_VERSION = os.getenv("DATAPROC_MCP_SERVER_VERSION", "1.0.0")
 mcp = FastMCP(SERVER_NAME)
 
 
+def resolve_project_and_region(project_id: str | None, region: str | None) -> tuple[str, str] | str:
+    """Resolve project_id and region from parameters or gcloud config defaults.
+    
+    Returns:
+        Tuple of (project_id, region) if successful, error message string if failed.
+    """
+    # Resolve project_id
+    if project_id is None:
+        project_id = get_default_project()
+        if project_id is None:
+            return "Error: No project_id provided and no default project configured in gcloud. Run 'gcloud config set project PROJECT_ID' or provide project_id parameter."
+    
+    # Resolve region
+    if region is None:
+        region = get_default_region()
+        if region is None:
+            return "Error: No region provided and no default region configured in gcloud. Run 'gcloud config set compute/region REGION' or provide region parameter."
+    
+    return project_id, region
+
+
 # Tools using FastMCP decorators
 @mcp.tool()
-async def list_clusters(project_id: str, region: str) -> str:
+async def list_clusters(project_id: str | None = None, region: str | None = None) -> str:
     """List Dataproc clusters in a project and region.
 
     Args:
-        project_id: Google Cloud project ID
-        region: Dataproc region (e.g., us-central1)
+        project_id: Google Cloud project ID (optional, uses gcloud config default)
+        region: Dataproc region (optional, uses gcloud config default)
     """
+    resolved = resolve_project_and_region(project_id, region)
+    if isinstance(resolved, str):  # Error message
+        return resolved
+    project_id, region = resolved
+    
     client = DataprocClient()
     try:
         result = await client.list_clusters(project_id, region)
@@ -38,9 +65,9 @@ async def list_clusters(project_id: str, region: str) -> str:
 
 @mcp.tool()
 async def create_cluster(
-    project_id: str,
-    region: str,
     cluster_name: str,
+    project_id: str | None = None,
+    region: str | None = None,
     num_instances: int = 2,
     machine_type: str = "n1-standard-4",
     disk_size_gb: int = 100,
@@ -49,14 +76,19 @@ async def create_cluster(
     """Create a new Dataproc cluster.
 
     Args:
-        project_id: Google Cloud project ID
-        region: Dataproc region
         cluster_name: Name for the new cluster
+        project_id: Google Cloud project ID (optional, uses gcloud config default)
+        region: Dataproc region (optional, uses gcloud config default)
         num_instances: Number of worker instances
         machine_type: Machine type for cluster nodes
         disk_size_gb: Boot disk size in GB
         image_version: Dataproc image version
     """
+    resolved = resolve_project_and_region(project_id, region)
+    if isinstance(resolved, str):  # Error message
+        return resolved
+    project_id, region = resolved
+    
     client = DataprocClient()
     try:
         result = await client.create_cluster(
@@ -75,14 +107,19 @@ async def create_cluster(
 
 
 @mcp.tool()
-async def delete_cluster(project_id: str, region: str, cluster_name: str) -> str:
+async def delete_cluster(cluster_name: str, project_id: str | None = None, region: str | None = None) -> str:
     """Delete a Dataproc cluster.
 
     Args:
-        project_id: Google Cloud project ID
-        region: Dataproc region
         cluster_name: Name of the cluster to delete
+        project_id: Google Cloud project ID (optional, uses gcloud config default)
+        region: Dataproc region (optional, uses gcloud config default)
     """
+    resolved = resolve_project_and_region(project_id, region)
+    if isinstance(resolved, str):  # Error message
+        return resolved
+    project_id, region = resolved
+    
     client = DataprocClient()
     try:
         result = await client.delete_cluster(project_id, region, cluster_name)
@@ -93,14 +130,19 @@ async def delete_cluster(project_id: str, region: str, cluster_name: str) -> str
 
 
 @mcp.tool()
-async def get_cluster(project_id: str, region: str, cluster_name: str) -> str:
+async def get_cluster(cluster_name: str, project_id: str | None = None, region: str | None = None) -> str:
     """Get details of a specific Dataproc cluster.
 
     Args:
-        project_id: Google Cloud project ID
-        region: Dataproc region
         cluster_name: Name of the cluster
+        project_id: Google Cloud project ID (optional, uses gcloud config default)
+        region: Dataproc region (optional, uses gcloud config default)
     """
+    resolved = resolve_project_and_region(project_id, region)
+    if isinstance(resolved, str):  # Error message
+        return resolved
+    project_id, region = resolved
+    
     client = DataprocClient()
     try:
         result = await client.get_cluster(project_id, region, cluster_name)
