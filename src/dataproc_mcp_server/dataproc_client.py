@@ -7,6 +7,7 @@ from datetime import datetime
 from typing import Any
 
 import structlog
+from google.api_core import client_options
 from google.auth import default
 from google.cloud import dataproc_v1
 from google.cloud.dataproc_v1 import types
@@ -39,19 +40,31 @@ class DataprocClient:
             # Use default credentials (ADC)
             self._credentials, self._project_id = default()
 
-    def _get_cluster_client(self) -> dataproc_v1.ClusterControllerClient:
-        """Get cluster controller client."""
-        return dataproc_v1.ClusterControllerClient(credentials=self._credentials)
+    def _get_cluster_client(self, region: str) -> dataproc_v1.ClusterControllerClient:
+        """Get cluster controller client with regional endpoint."""
+        # Configure regional endpoint
+        regional_endpoint = f"{region}-dataproc.googleapis.com"
+        client_opts = client_options.ClientOptions(api_endpoint=regional_endpoint)
 
-    def _get_job_client(self) -> dataproc_v1.JobControllerClient:
-        """Get job controller client."""
-        return dataproc_v1.JobControllerClient(credentials=self._credentials)
+        return dataproc_v1.ClusterControllerClient(
+            credentials=self._credentials, client_options=client_opts
+        )
+
+    def _get_job_client(self, region: str) -> dataproc_v1.JobControllerClient:
+        """Get job controller client with regional endpoint."""
+        # Configure regional endpoint
+        regional_endpoint = f"{region}-dataproc.googleapis.com"
+        client_opts = client_options.ClientOptions(api_endpoint=regional_endpoint)
+
+        return dataproc_v1.JobControllerClient(
+            credentials=self._credentials, client_options=client_opts
+        )
 
     async def list_clusters(self, project_id: str, region: str) -> dict[str, Any]:
         """List clusters in a project and region."""
         try:
             loop = asyncio.get_event_loop()
-            client = self._get_cluster_client()
+            client = self._get_cluster_client(region)
 
             request = types.ListClustersRequest(project_id=project_id, region=region)
 
@@ -103,7 +116,7 @@ class DataprocClient:
         """Create a new Dataproc cluster."""
         try:
             loop = asyncio.get_event_loop()
-            client = self._get_cluster_client()
+            client = self._get_cluster_client(region)
 
             # Configure cluster
             cluster_config = types.ClusterConfig(
@@ -152,7 +165,7 @@ class DataprocClient:
         """Delete a Dataproc cluster."""
         try:
             loop = asyncio.get_event_loop()
-            client = self._get_cluster_client()
+            client = self._get_cluster_client(region)
 
             request = types.DeleteClusterRequest(
                 project_id=project_id, region=region, cluster_name=cluster_name
@@ -177,7 +190,7 @@ class DataprocClient:
         """Get details of a specific cluster."""
         try:
             loop = asyncio.get_event_loop()
-            client = self._get_cluster_client()
+            client = self._get_cluster_client(region)
 
             request = types.GetClusterRequest(
                 project_id=project_id, region=region, cluster_name=cluster_name
@@ -232,7 +245,7 @@ class DataprocClient:
         """Submit a job to a Dataproc cluster."""
         try:
             loop = asyncio.get_event_loop()
-            client = self._get_job_client()
+            client = self._get_job_client(region)
 
             args = args or []
             jar_files = jar_files or []
@@ -311,7 +324,7 @@ class DataprocClient:
         """List jobs in a region."""
         try:
             loop = asyncio.get_event_loop()
-            client = self._get_job_client()
+            client = self._get_job_client(region)
 
             request = types.ListJobsRequest(
                 project_id=project_id,
@@ -359,7 +372,7 @@ class DataprocClient:
         """Get details of a specific job."""
         try:
             loop = asyncio.get_event_loop()
-            client = self._get_job_client()
+            client = self._get_job_client(region)
 
             request = types.GetJobRequest(
                 project_id=project_id, region=region, job_id=job_id
@@ -396,7 +409,7 @@ class DataprocClient:
         """Cancel a running job."""
         try:
             loop = asyncio.get_event_loop()
-            client = self._get_job_client()
+            client = self._get_job_client(region)
 
             request = types.CancelJobRequest(
                 project_id=project_id, region=region, job_id=job_id

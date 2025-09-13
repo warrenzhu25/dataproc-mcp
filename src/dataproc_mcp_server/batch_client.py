@@ -6,6 +6,7 @@ import os
 from typing import Any
 
 import structlog
+from google.api_core import client_options
 from google.auth import default
 from google.cloud import dataproc_v1
 from google.cloud.dataproc_v1 import types
@@ -32,9 +33,15 @@ class DataprocBatchClient:
         else:
             self._credentials, self._project_id = default()
 
-    def _get_batch_client(self) -> dataproc_v1.BatchControllerClient:
-        """Get batch controller client."""
-        return dataproc_v1.BatchControllerClient(credentials=self._credentials)
+    def _get_batch_client(self, region: str) -> dataproc_v1.BatchControllerClient:
+        """Get batch controller client with regional endpoint."""
+        # Configure regional endpoint
+        regional_endpoint = f"{region}-dataproc.googleapis.com"
+        client_opts = client_options.ClientOptions(api_endpoint=regional_endpoint)
+
+        return dataproc_v1.BatchControllerClient(
+            credentials=self._credentials, client_options=client_opts
+        )
 
     async def create_batch_job(
         self,
@@ -53,7 +60,7 @@ class DataprocBatchClient:
         """Create a batch job."""
         try:
             loop = asyncio.get_event_loop()
-            client = self._get_batch_client()
+            client = self._get_batch_client(region)
 
             args = args or []
             jar_files = jar_files or []
@@ -133,7 +140,7 @@ class DataprocBatchClient:
         """List batch jobs."""
         try:
             loop = asyncio.get_event_loop()
-            client = self._get_batch_client()
+            client = self._get_batch_client(region)
 
             request = types.ListBatchesRequest(
                 parent=f"projects/{project_id}/locations/{region}", page_size=page_size
@@ -172,7 +179,7 @@ class DataprocBatchClient:
         """Get details of a specific batch job."""
         try:
             loop = asyncio.get_event_loop()
-            client = self._get_batch_client()
+            client = self._get_batch_client(region)
 
             request = types.GetBatchRequest(
                 name=f"projects/{project_id}/locations/{region}/batches/{batch_id}"
@@ -211,7 +218,7 @@ class DataprocBatchClient:
         """Delete a batch job."""
         try:
             loop = asyncio.get_event_loop()
-            client = self._get_batch_client()
+            client = self._get_batch_client(region)
 
             request = types.DeleteBatchRequest(
                 name=f"projects/{project_id}/locations/{region}/batches/{batch_id}"
