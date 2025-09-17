@@ -1,7 +1,5 @@
 """Tests for MCP server functionality."""
 
-import pytest
-
 from dataproc_mcp_server.server import app, resolve_project_and_region
 
 
@@ -11,7 +9,7 @@ class TestMCPServer:
     def test_app_import(self):
         """Test that the FastMCP app can be imported."""
         assert app is not None
-        assert hasattr(app, 'run')
+        assert hasattr(app, "run")
 
     def test_resolve_project_and_region_success(self):
         """Test successful project and region resolution."""
