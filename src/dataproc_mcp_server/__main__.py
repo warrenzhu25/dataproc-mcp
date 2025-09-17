@@ -8,7 +8,7 @@ import structlog
 from .server import app
 
 
-def setup_logging():
+def setup_logging() -> None:
     """Configure structured logging."""
     # Check for debug logging configuration
     debug_enabled = os.getenv("DATAPROC_MCP_DEBUG", "false").lower() in (
@@ -37,7 +37,7 @@ def setup_logging():
     )
 
 
-def main():
+def main() -> None:
     """Run the MCP server."""
     setup_logging()
 

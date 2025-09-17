@@ -308,7 +308,7 @@ class DataprocBatchClient:
                 }
 
             # Extract environment config details
-            environment_config = {}
+            environment_config: dict[str, Any] = {}
             if batch.environment_config:
                 environment_config = {
                     "execution_config": {},
@@ -514,7 +514,7 @@ class DataprocBatchClient:
             }
 
             # Calculate execution duration if possible
-            def calculate_duration(batch_data):
+            def calculate_duration(batch_data: dict[str, Any]) -> float | None:
                 state_history = batch_data.get("state_history", [])
                 if len(state_history) >= 2:
                     from datetime import datetime

@@ -167,9 +167,9 @@ async def submit_job(
     cluster_name: str,
     job_type: str,
     main_file: str,
-    args: list[str] = None,
-    jar_files: list[str] = None,
-    properties: dict[str, str] = None,
+    args: list[str] | None = None,
+    jar_files: list[str] | None = None,
+    properties: dict[str, str] | None = None,
 ) -> str:
     """Submit a job to a Dataproc cluster.
 
@@ -203,7 +203,10 @@ async def submit_job(
 
 @mcp.tool()
 async def list_jobs(
-    project_id: str, region: str, cluster_name: str = None, job_states: list[str] = None
+    project_id: str,
+    region: str,
+    cluster_name: str | None = None,
+    job_states: list[str] | None = None,
 ) -> str:
     """List jobs in a Dataproc cluster.
 
@@ -270,12 +273,12 @@ async def create_batch_job(
     batch_id: str,
     job_type: str,
     main_file: str,
-    args: list[str] = None,
-    jar_files: list[str] = None,
-    properties: dict[str, str] = None,
-    service_account: str = None,
-    network_uri: str = None,
-    subnetwork_uri: str = None,
+    args: list[str] | None = None,
+    jar_files: list[str] | None = None,
+    properties: dict[str, str] | None = None,
+    service_account: str | None = None,
+    network_uri: str | None = None,
+    subnetwork_uri: str | None = None,
 ) -> str:
     """Create a Dataproc batch job.
 
