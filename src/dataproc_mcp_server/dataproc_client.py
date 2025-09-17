@@ -41,7 +41,7 @@ class DataprocClient:
         else:
             # Use default credentials (ADC)
             self._credentials, self._project_id = default()
-            
+
             # If no project from ADC, try gcloud config
             if not self._project_id:
                 self._project_id = get_default_project()
