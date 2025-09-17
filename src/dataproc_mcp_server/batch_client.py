@@ -128,12 +128,13 @@ class DataprocBatchClient:
 
             operation = await loop.run_in_executor(None, client.create_batch, request)
 
+            operation_name = getattr(operation, 'name', str(operation))
             return {
-                "operation_name": operation.name,
+                "operation_name": operation_name,
                 "batch_id": batch_id,
                 "job_type": job_type,
                 "status": "CREATING",
-                "message": f"Batch job creation initiated. Operation: {operation.name}",
+                "message": f"Batch job creation initiated. Operation: {operation_name}",
             }
 
         except Exception as e:
@@ -197,9 +198,7 @@ class DataprocBatchClient:
             runtime_info = {}
             if batch.runtime_info:
                 runtime_info = {
-                    "endpoints": dict(batch.runtime_info.endpoints)
-                    if batch.runtime_info.endpoints
-                    else {},
+                    "endpoints": dict(batch.runtime_info.endpoints) if batch.runtime_info.endpoints else {},
                     "output_uri": batch.runtime_info.output_uri
                     if batch.runtime_info.output_uri
                     else None,
