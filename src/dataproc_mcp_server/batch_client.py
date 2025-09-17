@@ -128,7 +128,7 @@ class DataprocBatchClient:
 
             operation = await loop.run_in_executor(None, client.create_batch, request)
 
-            operation_name = getattr(operation, 'name', str(operation))
+            operation_name = getattr(operation, "name", str(operation))
             return {
                 "operation_name": operation_name,
                 "batch_id": batch_id,
@@ -198,7 +198,9 @@ class DataprocBatchClient:
             runtime_info = {}
             if batch.runtime_info:
                 runtime_info = {
-                    "endpoints": dict(batch.runtime_info.endpoints) if batch.runtime_info.endpoints else {},
+                    "endpoints": dict(batch.runtime_info.endpoints)
+                    if batch.runtime_info.endpoints
+                    else {},
                     "output_uri": batch.runtime_info.output_uri
                     if batch.runtime_info.output_uri
                     else None,

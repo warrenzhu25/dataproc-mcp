@@ -154,7 +154,7 @@ class DataprocClient:
             # Create cluster (this is a long-running operation)
             operation = await loop.run_in_executor(None, client.create_cluster, request)
 
-            operation_name = getattr(operation, 'name', str(operation))
+            operation_name = getattr(operation, "name", str(operation))
             return {
                 "operation_name": operation_name,
                 "cluster_name": cluster_name,
@@ -180,7 +180,7 @@ class DataprocClient:
 
             operation = await loop.run_in_executor(None, client.delete_cluster, request)
 
-            operation_name = getattr(operation, 'name', str(operation))
+            operation_name = getattr(operation, "name", str(operation))
             return {
                 "operation_name": operation_name,
                 "cluster_name": cluster_name,
@@ -226,10 +226,14 @@ class DataprocClient:
                 if cluster.config.gce_cluster_config.zone_uri
                 else None,
                 "metrics": {
-                    "hdfs_capacity_mb": getattr(cluster.metrics.hdfs_metrics, 'capacity_mb', None)
+                    "hdfs_capacity_mb": getattr(
+                        cluster.metrics.hdfs_metrics, "capacity_mb", None
+                    )
                     if cluster.metrics and cluster.metrics.hdfs_metrics
                     else None,
-                    "yarn_allocated_memory_mb": getattr(cluster.metrics.yarn_metrics, 'allocated_memory_mb', None)
+                    "yarn_allocated_memory_mb": getattr(
+                        cluster.metrics.yarn_metrics, "allocated_memory_mb", None
+                    )
                     if cluster.metrics and cluster.metrics.yarn_metrics
                     else None,
                 },
