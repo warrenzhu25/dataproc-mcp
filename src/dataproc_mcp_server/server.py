@@ -43,7 +43,7 @@ def resolve_project_and_region(
 
 
 # Tools using FastMCP decorators
-@mcp.tool()  # type: ignore[misc]
+@mcp.tool()
 async def list_clusters(
     project_id: str | None = None, region: str | None = None
 ) -> str:
@@ -67,7 +67,7 @@ async def list_clusters(
         return f"Error: {str(e)}"
 
 
-@mcp.tool()  # type: ignore[misc]
+@mcp.tool()
 async def create_cluster(
     cluster_name: str,
     project_id: str | None = None,
@@ -110,7 +110,7 @@ async def create_cluster(
         return f"Error: {str(e)}"
 
 
-@mcp.tool()  # type: ignore[misc]
+@mcp.tool()
 async def delete_cluster(
     cluster_name: str, project_id: str | None = None, region: str | None = None
 ) -> str:
@@ -135,7 +135,7 @@ async def delete_cluster(
         return f"Error: {str(e)}"
 
 
-@mcp.tool()  # type: ignore[misc]
+@mcp.tool()
 async def get_cluster(
     cluster_name: str, project_id: str | None = None, region: str | None = None
 ) -> str:
@@ -160,7 +160,7 @@ async def get_cluster(
         return f"Error: {str(e)}"
 
 
-@mcp.tool()  # type: ignore[misc]
+@mcp.tool()
 async def submit_job(
     project_id: str,
     region: str,
@@ -201,7 +201,7 @@ async def submit_job(
         return f"Error: {str(e)}"
 
 
-@mcp.tool()  # type: ignore[misc]
+@mcp.tool()
 async def list_jobs(
     project_id: str,
     region: str,
@@ -230,7 +230,7 @@ async def list_jobs(
         return f"Error: {str(e)}"
 
 
-@mcp.tool()  # type: ignore[misc]
+@mcp.tool()
 async def get_job(project_id: str, region: str, job_id: str) -> str:
     """Get details of a specific job.
 
@@ -248,7 +248,7 @@ async def get_job(project_id: str, region: str, job_id: str) -> str:
         return f"Error: {str(e)}"
 
 
-@mcp.tool()  # type: ignore[misc]
+@mcp.tool()
 async def cancel_job(project_id: str, region: str, job_id: str) -> str:
     """Cancel a running job.
 
@@ -266,7 +266,7 @@ async def cancel_job(project_id: str, region: str, job_id: str) -> str:
         return f"Error: {str(e)}"
 
 
-@mcp.tool()  # type: ignore[misc]
+@mcp.tool()
 async def create_batch_job(
     project_id: str,
     region: str,
@@ -316,7 +316,7 @@ async def create_batch_job(
         return f"Error: {str(e)}"
 
 
-@mcp.tool()  # type: ignore[misc]
+@mcp.tool()
 async def list_batch_jobs(project_id: str, region: str, page_size: int = 100) -> str:
     """List Dataproc batch jobs.
 
@@ -334,7 +334,7 @@ async def list_batch_jobs(project_id: str, region: str, page_size: int = 100) ->
         return f"Error: {str(e)}"
 
 
-@mcp.tool()  # type: ignore[misc]
+@mcp.tool()
 async def get_batch_job(project_id: str, region: str, batch_id: str) -> str:
     """Get details of a specific batch job.
 
@@ -352,7 +352,7 @@ async def get_batch_job(project_id: str, region: str, batch_id: str) -> str:
         return f"Error: {str(e)}"
 
 
-@mcp.tool()  # type: ignore[misc]
+@mcp.tool()
 async def delete_batch_job(project_id: str, region: str, batch_id: str) -> str:
     """Delete a batch job.
 
@@ -370,7 +370,7 @@ async def delete_batch_job(project_id: str, region: str, batch_id: str) -> str:
         return f"Error: {str(e)}"
 
 
-@mcp.tool()  # type: ignore[misc]
+@mcp.tool()
 async def compare_batch_jobs(
     batch_id_1: str,
     batch_id_2: str,
@@ -402,13 +402,13 @@ async def compare_batch_jobs(
 
 
 # Resources using FastMCP decorators
-@mcp.resource("dataproc://clusters")  # type: ignore[misc]
+@mcp.resource("dataproc://clusters")
 async def get_clusters_resource() -> str:
     """Get list of all Dataproc clusters."""
     return "Resource listing requires project_id and region parameters"
 
 
-@mcp.resource("dataproc://jobs")  # type: ignore[misc]
+@mcp.resource("dataproc://jobs")
 async def get_jobs_resource() -> str:
     """Get list of all Dataproc jobs."""
     return "Resource listing requires project_id and region parameters"
