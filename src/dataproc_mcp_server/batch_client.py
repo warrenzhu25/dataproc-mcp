@@ -212,14 +212,20 @@ class DataprocBatchClient:
                 # Add usage information if available
                 if batch.runtime_info.approximate_usage:
                     runtime_info["approximate_usage"] = {
-                        "milli_dcu_seconds": str(batch.runtime_info.approximate_usage.milli_dcu_seconds),
-                        "shuffle_storage_gb_seconds": str(batch.runtime_info.approximate_usage.shuffle_storage_gb_seconds),
+                        "milli_dcu_seconds": str(
+                            batch.runtime_info.approximate_usage.milli_dcu_seconds
+                        ),
+                        "shuffle_storage_gb_seconds": str(
+                            batch.runtime_info.approximate_usage.shuffle_storage_gb_seconds
+                        ),
                     }
 
                 if batch.runtime_info.current_usage:
                     runtime_info["current_usage"] = {
                         "milli_dcu": str(batch.runtime_info.current_usage.milli_dcu),
-                        "shuffle_storage_gb": str(batch.runtime_info.current_usage.shuffle_storage_gb),
+                        "shuffle_storage_gb": str(
+                            batch.runtime_info.current_usage.shuffle_storage_gb
+                        ),
                     }
 
             # Extract job configuration details

@@ -56,6 +56,7 @@ def main() -> None:
 
     # Type-safe transport variable for FastMCP
     from typing import Literal
+
     transport: Literal["stdio", "sse", "streamable-http"] = transport_env  # type: ignore[assignment]
 
     # Run the FastMCP server with the specified transport
