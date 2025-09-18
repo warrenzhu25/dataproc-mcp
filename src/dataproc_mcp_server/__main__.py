@@ -8,7 +8,7 @@ import structlog
 from .server import app
 
 
-def setup_logging():
+def setup_logging() -> None:
     """Configure structured logging."""
     # Check for debug logging configuration
     debug_enabled = os.getenv("DATAPROC_MCP_DEBUG", "false").lower() in (
@@ -37,22 +37,27 @@ def setup_logging():
     )
 
 
-def main():
+def main() -> None:
     """Run the MCP server."""
     setup_logging()
 
     # Check for transport type
-    transport = os.getenv("DATAPROC_MCP_TRANSPORT", "stdio")
+    transport_env = os.getenv("DATAPROC_MCP_TRANSPORT", "stdio")
 
     # FastMCP supports stdio, sse, and streamable-http transports
-    if transport == "http":
+    if transport_env == "http":
         # Map http to streamable-http for FastMCP
-        transport = "streamable-http"
+        transport_env = "streamable-http"
 
-    if transport not in ["stdio", "sse", "streamable-http"]:
+    if transport_env not in ["stdio", "sse", "streamable-http"]:
         raise ValueError(
-            f"Unsupported transport: {transport}. Supported: stdio, sse, streamable-http"
+            f"Unsupported transport: {transport_env}. Supported: stdio, sse, streamable-http"
         )
+
+    # Type-safe transport variable for FastMCP
+    from typing import Literal
+
+    transport: Literal["stdio", "sse", "streamable-http"] = transport_env  # type: ignore[assignment]
 
     # Run the FastMCP server with the specified transport
     app.run(transport=transport)

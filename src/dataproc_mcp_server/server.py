@@ -19,9 +19,11 @@ SERVER_VERSION = os.getenv("DATAPROC_MCP_SERVER_VERSION", "1.0.0")
 mcp = FastMCP(SERVER_NAME)
 
 
-def resolve_project_and_region(project_id: str | None, region: str | None) -> tuple[str, str] | str:
+def resolve_project_and_region(
+    project_id: str | None, region: str | None
+) -> tuple[str, str] | str:
     """Resolve project_id and region from parameters or gcloud config defaults.
-    
+
     Returns:
         Tuple of (project_id, region) if successful, error message string if failed.
     """
@@ -30,19 +32,21 @@ def resolve_project_and_region(project_id: str | None, region: str | None) -> tu
         project_id = get_default_project()
         if project_id is None:
             return "Error: No project_id provided and no default project configured in gcloud. Run 'gcloud config set project PROJECT_ID' or provide project_id parameter."
-    
+
     # Resolve region
     if region is None:
         region = get_default_region()
         if region is None:
             return "Error: No region provided and no default region configured in gcloud. Run 'gcloud config set compute/region REGION' or provide region parameter."
-    
+
     return project_id, region
 
 
 # Tools using FastMCP decorators
 @mcp.tool()
-async def list_clusters(project_id: str | None = None, region: str | None = None) -> str:
+async def list_clusters(
+    project_id: str | None = None, region: str | None = None
+) -> str:
     """List Dataproc clusters in a project and region.
 
     Args:
@@ -53,7 +57,7 @@ async def list_clusters(project_id: str | None = None, region: str | None = None
     if isinstance(resolved, str):  # Error message
         return resolved
     project_id, region = resolved
-    
+
     client = DataprocClient()
     try:
         result = await client.list_clusters(project_id, region)
@@ -88,7 +92,7 @@ async def create_cluster(
     if isinstance(resolved, str):  # Error message
         return resolved
     project_id, region = resolved
-    
+
     client = DataprocClient()
     try:
         result = await client.create_cluster(
@@ -107,7 +111,9 @@ async def create_cluster(
 
 
 @mcp.tool()
-async def delete_cluster(cluster_name: str, project_id: str | None = None, region: str | None = None) -> str:
+async def delete_cluster(
+    cluster_name: str, project_id: str | None = None, region: str | None = None
+) -> str:
     """Delete a Dataproc cluster.
 
     Args:
@@ -119,7 +125,7 @@ async def delete_cluster(cluster_name: str, project_id: str | None = None, regio
     if isinstance(resolved, str):  # Error message
         return resolved
     project_id, region = resolved
-    
+
     client = DataprocClient()
     try:
         result = await client.delete_cluster(project_id, region, cluster_name)
@@ -130,7 +136,9 @@ async def delete_cluster(cluster_name: str, project_id: str | None = None, regio
 
 
 @mcp.tool()
-async def get_cluster(cluster_name: str, project_id: str | None = None, region: str | None = None) -> str:
+async def get_cluster(
+    cluster_name: str, project_id: str | None = None, region: str | None = None
+) -> str:
     """Get details of a specific Dataproc cluster.
 
     Args:
@@ -142,7 +150,7 @@ async def get_cluster(cluster_name: str, project_id: str | None = None, region: 
     if isinstance(resolved, str):  # Error message
         return resolved
     project_id, region = resolved
-    
+
     client = DataprocClient()
     try:
         result = await client.get_cluster(project_id, region, cluster_name)
@@ -159,9 +167,9 @@ async def submit_job(
     cluster_name: str,
     job_type: str,
     main_file: str,
-    args: list[str] = None,
-    jar_files: list[str] = None,
-    properties: dict[str, str] = None,
+    args: list[str] | None = None,
+    jar_files: list[str] | None = None,
+    properties: dict[str, str] | None = None,
 ) -> str:
     """Submit a job to a Dataproc cluster.
 
@@ -195,7 +203,10 @@ async def submit_job(
 
 @mcp.tool()
 async def list_jobs(
-    project_id: str, region: str, cluster_name: str = None, job_states: list[str] = None
+    project_id: str,
+    region: str,
+    cluster_name: str | None = None,
+    job_states: list[str] | None = None,
 ) -> str:
     """List jobs in a Dataproc cluster.
 
@@ -262,12 +273,12 @@ async def create_batch_job(
     batch_id: str,
     job_type: str,
     main_file: str,
-    args: list[str] = None,
-    jar_files: list[str] = None,
-    properties: dict[str, str] = None,
-    service_account: str = None,
-    network_uri: str = None,
-    subnetwork_uri: str = None,
+    args: list[str] | None = None,
+    jar_files: list[str] | None = None,
+    properties: dict[str, str] | None = None,
+    service_account: str | None = None,
+    network_uri: str | None = None,
+    subnetwork_uri: str | None = None,
 ) -> str:
     """Create a Dataproc batch job.
 
@@ -361,10 +372,10 @@ async def delete_batch_job(project_id: str, region: str, batch_id: str) -> str:
 
 @mcp.tool()
 async def compare_batch_jobs(
-    batch_id_1: str, 
-    batch_id_2: str, 
-    project_id: str | None = None, 
-    region: str | None = None
+    batch_id_1: str,
+    batch_id_2: str,
+    project_id: str | None = None,
+    region: str | None = None,
 ) -> str:
     """Compare two Dataproc batch jobs and return detailed differences.
 
@@ -378,10 +389,12 @@ async def compare_batch_jobs(
     if isinstance(resolved, str):  # Error message
         return resolved
     project_id, region = resolved
-    
+
     batch_client = DataprocBatchClient()
     try:
-        result = await batch_client.compare_batches(project_id, region, batch_id_1, batch_id_2)
+        result = await batch_client.compare_batches(
+            project_id, region, batch_id_1, batch_id_2
+        )
         return str(result)
     except Exception as e:
         logger.error("Failed to compare batch jobs", error=str(e))

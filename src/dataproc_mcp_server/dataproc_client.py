@@ -41,7 +41,7 @@ class DataprocClient:
         else:
             # Use default credentials (ADC)
             self._credentials, self._project_id = default()
-            
+
             # If no project from ADC, try gcloud config
             if not self._project_id:
                 self._project_id = get_default_project()
@@ -154,11 +154,12 @@ class DataprocClient:
             # Create cluster (this is a long-running operation)
             operation = await loop.run_in_executor(None, client.create_cluster, request)
 
+            operation_name = getattr(operation, "name", str(operation))
             return {
-                "operation_name": operation.name,
+                "operation_name": operation_name,
                 "cluster_name": cluster_name,
                 "status": "CREATING",
-                "message": f"Cluster creation initiated. Operation: {operation.name}",
+                "message": f"Cluster creation initiated. Operation: {operation_name}",
             }
 
         except Exception as e:
@@ -179,11 +180,12 @@ class DataprocClient:
 
             operation = await loop.run_in_executor(None, client.delete_cluster, request)
 
+            operation_name = getattr(operation, "name", str(operation))
             return {
-                "operation_name": operation.name,
+                "operation_name": operation_name,
                 "cluster_name": cluster_name,
                 "status": "DELETING",
-                "message": f"Cluster deletion initiated. Operation: {operation.name}",
+                "message": f"Cluster deletion initiated. Operation: {operation_name}",
             }
 
         except Exception as e:
@@ -224,10 +226,14 @@ class DataprocClient:
                 if cluster.config.gce_cluster_config.zone_uri
                 else None,
                 "metrics": {
-                    "hdfs_capacity_mb": cluster.metrics.hdfs_metrics.capacity_mb
+                    "hdfs_capacity_mb": getattr(
+                        cluster.metrics.hdfs_metrics, "capacity_mb", None
+                    )
                     if cluster.metrics and cluster.metrics.hdfs_metrics
                     else None,
-                    "yarn_allocated_memory_mb": cluster.metrics.yarn_metrics.allocated_memory_mb
+                    "yarn_allocated_memory_mb": getattr(
+                        cluster.metrics.yarn_metrics, "allocated_memory_mb", None
+                    )
                     if cluster.metrics and cluster.metrics.yarn_metrics
                     else None,
                 },

@@ -34,7 +34,7 @@ class DataprocBatchClient:
                 self._project_id = service_account_info.get("project_id")
         else:
             self._credentials, self._project_id = default()
-            
+
             # If no project from ADC, try gcloud config
             if not self._project_id:
                 self._project_id = get_default_project()
@@ -128,12 +128,13 @@ class DataprocBatchClient:
 
             operation = await loop.run_in_executor(None, client.create_batch, request)
 
+            operation_name = getattr(operation, "name", str(operation))
             return {
-                "operation_name": operation.name,
+                "operation_name": operation_name,
                 "batch_id": batch_id,
                 "job_type": job_type,
                 "status": "CREATING",
-                "message": f"Batch job creation initiated. Operation: {operation.name}",
+                "message": f"Batch job creation initiated. Operation: {operation_name}",
             }
 
         except Exception as e:
@@ -197,98 +198,164 @@ class DataprocBatchClient:
             runtime_info = {}
             if batch.runtime_info:
                 runtime_info = {
-                    "endpoints": dict(batch.runtime_info.endpoints) if batch.runtime_info.endpoints else {},
-                    "output_uri": batch.runtime_info.output_uri if batch.runtime_info.output_uri else None,
-                    "diagnostic_output_uri": batch.runtime_info.diagnostic_output_uri if batch.runtime_info.diagnostic_output_uri else None,
+                    "endpoints": dict(batch.runtime_info.endpoints)
+                    if batch.runtime_info.endpoints
+                    else {},
+                    "output_uri": batch.runtime_info.output_uri
+                    if batch.runtime_info.output_uri
+                    else None,
+                    "diagnostic_output_uri": batch.runtime_info.diagnostic_output_uri
+                    if batch.runtime_info.diagnostic_output_uri
+                    else None,
                 }
-                
+
                 # Add usage information if available
                 if batch.runtime_info.approximate_usage:
                     runtime_info["approximate_usage"] = {
-                        "milli_dcu_seconds": batch.runtime_info.approximate_usage.milli_dcu_seconds,
-                        "shuffle_storage_gb_seconds": batch.runtime_info.approximate_usage.shuffle_storage_gb_seconds,
+                        "milli_dcu_seconds": str(
+                            batch.runtime_info.approximate_usage.milli_dcu_seconds
+                        ),
+                        "shuffle_storage_gb_seconds": str(
+                            batch.runtime_info.approximate_usage.shuffle_storage_gb_seconds
+                        ),
                     }
-                
+
                 if batch.runtime_info.current_usage:
                     runtime_info["current_usage"] = {
-                        "milli_dcu": batch.runtime_info.current_usage.milli_dcu,
-                        "shuffle_storage_gb": batch.runtime_info.current_usage.shuffle_storage_gb,
+                        "milli_dcu": str(batch.runtime_info.current_usage.milli_dcu),
+                        "shuffle_storage_gb": str(
+                            batch.runtime_info.current_usage.shuffle_storage_gb
+                        ),
                     }
 
             # Extract job configuration details
-            job_config = {}
+            job_config: dict[str, Any] = {}
             job_type = self._get_batch_job_type(batch)
-            
+
             if batch.spark_batch:
                 job_config = {
-                    "main_class": batch.spark_batch.main_class if batch.spark_batch.main_class else None,
-                    "main_jar_file_uri": batch.spark_batch.main_jar_file_uri if batch.spark_batch.main_jar_file_uri else None,
-                    "jar_file_uris": list(batch.spark_batch.jar_file_uris) if batch.spark_batch.jar_file_uris else [],
-                    "file_uris": list(batch.spark_batch.file_uris) if batch.spark_batch.file_uris else [],
-                    "archive_uris": list(batch.spark_batch.archive_uris) if batch.spark_batch.archive_uris else [],
-                    "args": list(batch.spark_batch.args) if batch.spark_batch.args else [],
+                    "main_class": batch.spark_batch.main_class
+                    if batch.spark_batch.main_class
+                    else None,
+                    "main_jar_file_uri": batch.spark_batch.main_jar_file_uri
+                    if batch.spark_batch.main_jar_file_uri
+                    else None,
+                    "jar_file_uris": list(batch.spark_batch.jar_file_uris)
+                    if batch.spark_batch.jar_file_uris
+                    else [],
+                    "file_uris": list(batch.spark_batch.file_uris)
+                    if batch.spark_batch.file_uris
+                    else [],
+                    "archive_uris": list(batch.spark_batch.archive_uris)
+                    if batch.spark_batch.archive_uris
+                    else [],
+                    "args": list(batch.spark_batch.args)
+                    if batch.spark_batch.args
+                    else [],
                 }
             elif batch.pyspark_batch:
                 job_config = {
                     "main_python_file_uri": batch.pyspark_batch.main_python_file_uri,
-                    "python_file_uris": list(batch.pyspark_batch.python_file_uris) if batch.pyspark_batch.python_file_uris else [],
-                    "jar_file_uris": list(batch.pyspark_batch.jar_file_uris) if batch.pyspark_batch.jar_file_uris else [],
-                    "file_uris": list(batch.pyspark_batch.file_uris) if batch.pyspark_batch.file_uris else [],
-                    "archive_uris": list(batch.pyspark_batch.archive_uris) if batch.pyspark_batch.archive_uris else [],
-                    "args": list(batch.pyspark_batch.args) if batch.pyspark_batch.args else [],
+                    "python_file_uris": list(batch.pyspark_batch.python_file_uris)
+                    if batch.pyspark_batch.python_file_uris
+                    else [],
+                    "jar_file_uris": list(batch.pyspark_batch.jar_file_uris)
+                    if batch.pyspark_batch.jar_file_uris
+                    else [],
+                    "file_uris": list(batch.pyspark_batch.file_uris)
+                    if batch.pyspark_batch.file_uris
+                    else [],
+                    "archive_uris": list(batch.pyspark_batch.archive_uris)
+                    if batch.pyspark_batch.archive_uris
+                    else [],
+                    "args": list(batch.pyspark_batch.args)
+                    if batch.pyspark_batch.args
+                    else [],
                 }
             elif batch.spark_sql_batch:
                 job_config = {
                     "query_file_uri": batch.spark_sql_batch.query_file_uri,
-                    "query_variables": dict(batch.spark_sql_batch.query_variables) if batch.spark_sql_batch.query_variables else {},
-                    "jar_file_uris": list(batch.spark_sql_batch.jar_file_uris) if batch.spark_sql_batch.jar_file_uris else [],
+                    "query_variables": dict(batch.spark_sql_batch.query_variables)
+                    if batch.spark_sql_batch.query_variables
+                    else {},
+                    "jar_file_uris": list(batch.spark_sql_batch.jar_file_uris)
+                    if batch.spark_sql_batch.jar_file_uris
+                    else [],
                 }
             elif batch.spark_r_batch:
                 job_config = {
                     "main_r_file_uri": batch.spark_r_batch.main_r_file_uri,
-                    "file_uris": list(batch.spark_r_batch.file_uris) if batch.spark_r_batch.file_uris else [],
-                    "archive_uris": list(batch.spark_r_batch.archive_uris) if batch.spark_r_batch.archive_uris else [],
-                    "args": list(batch.spark_r_batch.args) if batch.spark_r_batch.args else [],
+                    "file_uris": list(batch.spark_r_batch.file_uris)
+                    if batch.spark_r_batch.file_uris
+                    else [],
+                    "archive_uris": list(batch.spark_r_batch.archive_uris)
+                    if batch.spark_r_batch.archive_uris
+                    else [],
+                    "args": list(batch.spark_r_batch.args)
+                    if batch.spark_r_batch.args
+                    else [],
                 }
 
             # Extract runtime config details
             runtime_config = {}
             if batch.runtime_config:
                 runtime_config = {
-                    "version": batch.runtime_config.version if batch.runtime_config.version else None,
-                    "container_image": batch.runtime_config.container_image if batch.runtime_config.container_image else None,
-                    "properties": dict(batch.runtime_config.properties) if batch.runtime_config.properties else {},
-                    "service_account": batch.runtime_config.service_account if batch.runtime_config.service_account else None,
+                    "version": batch.runtime_config.version
+                    if batch.runtime_config.version
+                    else None,
+                    "container_image": batch.runtime_config.container_image
+                    if batch.runtime_config.container_image
+                    else None,
+                    "properties": dict(batch.runtime_config.properties)
+                    if batch.runtime_config.properties
+                    else {},
+                    "service_account": batch.runtime_config.service_account
+                    if batch.runtime_config.service_account
+                    else None,
                 }
 
-            # Extract environment config details  
-            environment_config = {}
+            # Extract environment config details
+            environment_config: dict[str, Any] = {}
             if batch.environment_config:
                 environment_config = {
                     "execution_config": {},
                     "peripherals_config": {},
                 }
-                
+
                 if batch.environment_config.execution_config:
                     exec_config = batch.environment_config.execution_config
                     environment_config["execution_config"] = {
-                        "service_account": exec_config.service_account if exec_config.service_account else None,
-                        "network_uri": exec_config.network_uri if exec_config.network_uri else None,
-                        "subnetwork_uri": exec_config.subnetwork_uri if exec_config.subnetwork_uri else None,
-                        "network_tags": list(exec_config.network_tags) if exec_config.network_tags else [],
+                        "service_account": exec_config.service_account
+                        if exec_config.service_account
+                        else None,
+                        "network_uri": exec_config.network_uri
+                        if exec_config.network_uri
+                        else None,
+                        "subnetwork_uri": exec_config.subnetwork_uri
+                        if exec_config.subnetwork_uri
+                        else None,
+                        "network_tags": list(exec_config.network_tags)
+                        if exec_config.network_tags
+                        else [],
                         "kms_key": exec_config.kms_key if exec_config.kms_key else None,
                     }
-                
+
                 if batch.environment_config.peripherals_config:
                     periph_config = batch.environment_config.peripherals_config
                     environment_config["peripherals_config"] = {
-                        "metastore_service": periph_config.metastore_service if periph_config.metastore_service else None,
+                        "metastore_service": periph_config.metastore_service
+                        if periph_config.metastore_service
+                        else None,
                         "spark_history_server_config": {},
                     }
-                    
+
                     if periph_config.spark_history_server_config:
-                        environment_config["peripherals_config"]["spark_history_server_config"] = {
-                            "dataproc_cluster": periph_config.spark_history_server_config.dataproc_cluster if periph_config.spark_history_server_config.dataproc_cluster else None,
+                        environment_config["peripherals_config"][
+                            "spark_history_server_config"
+                        ] = {
+                            "dataproc_cluster": periph_config.spark_history_server_config.dataproc_cluster
+                            if periph_config.spark_history_server_config.dataproc_cluster
+                            else None,
                         }
 
             return {
@@ -297,8 +364,12 @@ class DataprocBatchClient:
                 "uuid": batch.uuid if batch.uuid else None,
                 "state": batch.state.name,
                 "state_message": batch.state_message,
-                "state_time": batch.state_time.isoformat() if batch.state_time else None,
-                "create_time": batch.create_time.isoformat() if batch.create_time else None,
+                "state_time": batch.state_time.isoformat()
+                if batch.state_time
+                else None,
+                "create_time": batch.create_time.isoformat()
+                if batch.create_time
+                else None,
                 "creator": batch.creator if batch.creator else None,
                 "labels": dict(batch.labels) if batch.labels else {},
                 "job_type": job_type,
@@ -355,107 +426,128 @@ class DataprocBatchClient:
             # Get details for both batches
             batch_1 = await self.get_batch_job(project_id, region, batch_id_1)
             batch_2 = await self.get_batch_job(project_id, region, batch_id_2)
-            
+
             # Compare basic information
             basic_comparison = {
-                "batch_id": {"batch_1": batch_1["batch_id"], "batch_2": batch_2["batch_id"]},
+                "batch_id": {
+                    "batch_1": batch_1["batch_id"],
+                    "batch_2": batch_2["batch_id"],
+                },
                 "job_type": {
                     "batch_1": batch_1["job_type"],
                     "batch_2": batch_2["job_type"],
-                    "same": batch_1["job_type"] == batch_2["job_type"]
+                    "same": batch_1["job_type"] == batch_2["job_type"],
                 },
                 "state": {
                     "batch_1": batch_1["state"],
                     "batch_2": batch_2["state"],
-                    "same": batch_1["state"] == batch_2["state"]
+                    "same": batch_1["state"] == batch_2["state"],
                 },
                 "creator": {
                     "batch_1": batch_1.get("creator"),
                     "batch_2": batch_2.get("creator"),
-                    "same": batch_1.get("creator") == batch_2.get("creator")
+                    "same": batch_1.get("creator") == batch_2.get("creator"),
                 },
                 "create_time": {
                     "batch_1": batch_1.get("create_time"),
-                    "batch_2": batch_2.get("create_time")
-                }
+                    "batch_2": batch_2.get("create_time"),
+                },
             }
-            
+
             # Compare job configurations
             config_comparison = {
                 "same_config": batch_1["job_config"] == batch_2["job_config"],
                 "batch_1_config": batch_1["job_config"],
-                "batch_2_config": batch_2["job_config"]
+                "batch_2_config": batch_2["job_config"],
             }
-            
+
             # Compare runtime configurations
             runtime_comparison = {
                 "same_runtime": batch_1["runtime_config"] == batch_2["runtime_config"],
                 "batch_1_runtime": batch_1["runtime_config"],
-                "batch_2_runtime": batch_2["runtime_config"]
+                "batch_2_runtime": batch_2["runtime_config"],
             }
-            
+
             # Compare environment configurations
             env_comparison = {
-                "same_environment": batch_1["environment_config"] == batch_2["environment_config"],
+                "same_environment": batch_1["environment_config"]
+                == batch_2["environment_config"],
                 "batch_1_environment": batch_1["environment_config"],
-                "batch_2_environment": batch_2["environment_config"]
+                "batch_2_environment": batch_2["environment_config"],
             }
-            
+
             # Compare labels
             labels_comparison = {
                 "same_labels": batch_1["labels"] == batch_2["labels"],
                 "batch_1_labels": batch_1["labels"],
-                "batch_2_labels": batch_2["labels"]
+                "batch_2_labels": batch_2["labels"],
             }
-            
+
             # Compare performance/runtime info
             performance_comparison = {}
             runtime_1 = batch_1.get("runtime_info", {})
             runtime_2 = batch_2.get("runtime_info", {})
-            
-            if runtime_1.get("approximate_usage") and runtime_2.get("approximate_usage"):
+
+            if runtime_1.get("approximate_usage") and runtime_2.get(
+                "approximate_usage"
+            ):
                 usage_1 = runtime_1["approximate_usage"]
                 usage_2 = runtime_2["approximate_usage"]
                 performance_comparison = {
                     "resource_usage": {
                         "batch_1_milli_dcu_seconds": usage_1.get("milli_dcu_seconds"),
                         "batch_2_milli_dcu_seconds": usage_2.get("milli_dcu_seconds"),
-                        "batch_1_shuffle_storage_gb_seconds": usage_1.get("shuffle_storage_gb_seconds"),
-                        "batch_2_shuffle_storage_gb_seconds": usage_2.get("shuffle_storage_gb_seconds")
+                        "batch_1_shuffle_storage_gb_seconds": usage_1.get(
+                            "shuffle_storage_gb_seconds"
+                        ),
+                        "batch_2_shuffle_storage_gb_seconds": usage_2.get(
+                            "shuffle_storage_gb_seconds"
+                        ),
                     }
                 }
-            
+
             # Compare state history (execution timeline)
             history_comparison = {
-                "batch_1_states": [state["state"] for state in batch_1.get("state_history", [])],
-                "batch_2_states": [state["state"] for state in batch_2.get("state_history", [])],
-                "same_state_progression": [state["state"] for state in batch_1.get("state_history", [])] == 
-                                        [state["state"] for state in batch_2.get("state_history", [])]
+                "batch_1_states": [
+                    state["state"] for state in batch_1.get("state_history", [])
+                ],
+                "batch_2_states": [
+                    state["state"] for state in batch_2.get("state_history", [])
+                ],
+                "same_state_progression": [
+                    state["state"] for state in batch_1.get("state_history", [])
+                ]
+                == [state["state"] for state in batch_2.get("state_history", [])],
             }
-            
+
             # Calculate execution duration if possible
-            def calculate_duration(batch_data):
+            def calculate_duration(batch_data: dict[str, Any]) -> float | None:
                 state_history = batch_data.get("state_history", [])
                 if len(state_history) >= 2:
                     from datetime import datetime
+
                     try:
-                        start_time = datetime.fromisoformat(state_history[0]["state_start_time"].replace('Z', '+00:00'))
-                        end_time = datetime.fromisoformat(state_history[-1]["state_start_time"].replace('Z', '+00:00'))
+                        start_time = datetime.fromisoformat(
+                            state_history[0]["state_start_time"].replace("Z", "+00:00")
+                        )
+                        end_time = datetime.fromisoformat(
+                            state_history[-1]["state_start_time"].replace("Z", "+00:00")
+                        )
                         return (end_time - start_time).total_seconds()
                     except (ValueError, TypeError):
                         return None
                 return None
-            
+
             duration_1 = calculate_duration(batch_1)
             duration_2 = calculate_duration(batch_2)
-            
+
             if duration_1 is not None and duration_2 is not None:
                 performance_comparison["execution_time"] = {
                     "batch_1_seconds": duration_1,
                     "batch_2_seconds": duration_2,
-                    "difference_seconds": abs(duration_1 - duration_2)
+                    "difference_seconds": abs(duration_1 - duration_2),
                 }
-            
+
             # Summary of differences
             differences = []
             if not basic_comparison["job_type"]["same"]:
@@ -474,13 +566,13 @@ class DataprocBatchClient:
                 differences.append("Different labels")
             if not history_comparison["same_state_progression"]:
                 differences.append("Different state progression")
-            
+
             return {
                 "comparison_summary": {
                     "batch_1_id": batch_id_1,
                     "batch_2_id": batch_id_2,
                     "identical": len(differences) == 0,
-                    "differences": differences
+                    "differences": differences,
                 },
                 "basic_info": basic_comparison,
                 "job_configuration": config_comparison,
@@ -488,9 +580,9 @@ class DataprocBatchClient:
                 "environment_configuration": env_comparison,
                 "labels": labels_comparison,
                 "performance": performance_comparison,
-                "state_history": history_comparison
+                "state_history": history_comparison,
             }
-            
+
         except Exception as e:
             logger.error("Failed to compare batch jobs", error=str(e))
             raise
