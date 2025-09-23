@@ -74,15 +74,15 @@ class DataprocBatchClient:
 
             # Configure runtime
             runtime_config = types.RuntimeConfig()
-            if service_account:
-                runtime_config.service_account = service_account
             if properties:
                 runtime_config.properties = properties
 
             # Configure environment
             environment_config = types.EnvironmentConfig()
-            if network_uri or subnetwork_uri:
+            if service_account or network_uri or subnetwork_uri:
                 execution_config = types.ExecutionConfig()
+                if service_account:
+                    execution_config.service_account = service_account
                 if network_uri:
                     execution_config.network_uri = network_uri
                 if subnetwork_uri:
@@ -309,9 +309,6 @@ class DataprocBatchClient:
                     "properties": dict(batch.runtime_config.properties)
                     if batch.runtime_config.properties
                     else {},
-                    "service_account": batch.runtime_config.service_account
-                    if batch.runtime_config.service_account
-                    else None,
                 }
 
             # Extract environment config details
