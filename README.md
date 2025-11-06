@@ -2,6 +2,10 @@
 
 A Model Context Protocol (MCP) server that provides tools for managing Google Cloud Dataproc clusters and jobs. This server enables AI assistants to interact with Dataproc resources through a standardized interface.
 
+<a href="https://glama.ai/mcp/servers/@warrenzhu25/dataproc-mcp">
+  <img width="380" height="200" src="https://glama.ai/mcp/servers/@warrenzhu25/dataproc-mcp/badge" alt="Dataproc Server MCP server" />
+</a>
+
 ## Features
 
 ### Cluster Management
